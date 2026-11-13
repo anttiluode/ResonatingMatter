@@ -1,0 +1,9 @@
+seed 2718 grew low (38s)
+seed 2718 grew high (73s)
+seed 2718 grew keyC (117s)
+seed 2718 grew keyFs (153s)
+seed 2718 grew straight (191s)
+seed 2718 grew broken (227s)
+seed 2718 grew up (264s)
+seed 2718 grew down (300s)
+seed 2718 done in 521s

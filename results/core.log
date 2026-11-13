@@ -1,0 +1,18 @@
+PASS  Engine in index.html is byte-identical to src/engine.js  {"loadedFrom":"index.html","sha1":"2d336f9d74ab"}
+PASS  Same seed + same song gives bit-identical matter  {"a":"413968fcdb60","b":"413968fcdb60"}
+PASS  Same seed + different song gives different matter  {"keyC":"413968fcdb60","high":"3045dc799765"}
+PASS  Sand is conserved while it moves  {"before":7920.608652174473,"after":7920.60878140619,"relErr":1.631588216418536e-8}
+PASS  Frozen matter is bit-identical after 10 s of loud song  {"before":"bb94cec4230c","after":"bb94cec4230c"}
+PASS  A silent plate keeps every grain and every thread of gold  {"before":"bb94cec4230c","after":"bb94cec4230c"}
+PASS  Audit: with sand moves off, no grain moves  {}
+PASS  Audit: with gold grows off, no gold appears  {}
+PASS  Audit: with "sand weighs" off, swapping the sand leaves the sound identical  {}
+PASS  Audit: with "gold joins" off, swapping the gold leaves the sound identical  {}
+PASS  With both on, swapping sand changes the sound  {"relDiff":1.2441769233444013}
+PASS  With both on, swapping gold changes the sound  {"relDiff":1.3944204262859836}
+PASS  A grown plate sounds different from the original (same strike)  {"relDiff":1.4045141905367549}
+PASS  Restoring the original matter restores the original sound exactly  {}
+PASS  Compiled modes reproduce the simulated strike (all 1024 modes)  {"relErr":0.0282,"compileMs":12717}
+PASS  Cutting the gold around the speaker's tile silences the far ear more than an equal cut elsewhere  {"linksCut":30,"goldCut":16.26,"controlGoldCut":9.18,"farEar_dB_vs_grown":{"cutAroundSpeaker":-4.7,"controlCut":-1,"original":-11.7}}
+
+16/16 passed

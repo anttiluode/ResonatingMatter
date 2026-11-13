@@ -1,0 +1,9 @@
+seed 42 grew low (110s)
+seed 42 grew high (234s)
+seed 42 grew keyC (312s)
+seed 42 grew keyFs (425s)
+seed 42 grew straight (501s)
+seed 42 grew broken (557s)
+seed 42 grew up (611s)
+seed 42 grew down (668s)
+seed 42 done in 897s

@@ -1,0 +1,96 @@
+{
+ "date": "2026-11-13T17:22:48.652Z",
+ "engine": "index.html",
+ "checks": [
+  {
+   "name": "Engine in index.html is byte-identical to src/engine.js",
+   "pass": true,
+   "loadedFrom": "index.html",
+   "sha1": "2d336f9d74ab"
+  },
+  {
+   "name": "Same seed + same song gives bit-identical matter",
+   "pass": true,
+   "a": "413968fcdb60",
+   "b": "413968fcdb60"
+  },
+  {
+   "name": "Same seed + different song gives different matter",
+   "pass": true,
+   "keyC": "413968fcdb60",
+   "high": "3045dc799765"
+  },
+  {
+   "name": "Sand is conserved while it moves",
+   "pass": true,
+   "before": 7920.608652174473,
+   "after": 7920.60878140619,
+   "relErr": 1.631588216418536e-8
+  },
+  {
+   "name": "Frozen matter is bit-identical after 10 s of loud song",
+   "pass": true,
+   "before": "bb94cec4230c",
+   "after": "bb94cec4230c"
+  },
+  {
+   "name": "A silent plate keeps every grain and every thread of gold",
+   "pass": true,
+   "before": "bb94cec4230c",
+   "after": "bb94cec4230c"
+  },
+  {
+   "name": "Audit: with sand moves off, no grain moves",
+   "pass": true
+  },
+  {
+   "name": "Audit: with gold grows off, no gold appears",
+   "pass": true
+  },
+  {
+   "name": "Audit: with \"sand weighs\" off, swapping the sand leaves the sound identical",
+   "pass": true
+  },
+  {
+   "name": "Audit: with \"gold joins\" off, swapping the gold leaves the sound identical",
+   "pass": true
+  },
+  {
+   "name": "With both on, swapping sand changes the sound",
+   "pass": true,
+   "relDiff": 1.2441769233444013
+  },
+  {
+   "name": "With both on, swapping gold changes the sound",
+   "pass": true,
+   "relDiff": 1.3944204262859836
+  },
+  {
+   "name": "A grown plate sounds different from the original (same strike)",
+   "pass": true,
+   "relDiff": 1.4045141905367549
+  },
+  {
+   "name": "Restoring the original matter restores the original sound exactly",
+   "pass": true
+  },
+  {
+   "name": "Compiled modes reproduce the simulated strike (all 1024 modes)",
+   "pass": true,
+   "relErr": 0.0282,
+   "compileMs": 13417
+  },
+  {
+   "name": "Cutting the gold around the speaker's tile silences the far ear more than an equal cut elsewhere",
+   "pass": true,
+   "linksCut": 30,
+   "goldCut": 16.26,
+   "controlGoldCut": 9.18,
+   "farEar_dB_vs_grown": {
+    "cutAroundSpeaker": -4.7,
+    "controlCut": -1,
+    "original": -11.7
+   }
+  }
+ ]
+}

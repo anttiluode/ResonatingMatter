@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Resonating Matter</title>
+<meta name="theme-color" content="#0c1214">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,500;1,300&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0c1214;--panel:#121b1d;--line:#26353a;--bronze:#2b2420;--sand:#e6d8b8;--gold:#e2b553;--teal:#7fd4c8;--text:#dfe6e2;--muted:#93a6a1;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--ink);color:var(--text);font:14px/1.45 "Work Sans",system-ui,sans-serif}
+body{display:grid;grid-template-columns:1fr 330px;height:100vh;overflow:hidden}
+#stage{position:relative;overflow:hidden}
+#gl,#over{position:absolute;inset:0;width:100%;height:100%;display:block}
+#over{touch-action:none;cursor:crosshair}
+.title{position:absolute;left:28px;top:22px;pointer-events:none;max-width:340px}
+.title h1{font:300 34px/1.05 Spectral,Georgia,serif;margin:0 0 8px;letter-spacing:.2px}
+.title p{font:300 15px/1.45 Spectral,Georgia,serif;margin:0;color:var(--muted)}
+#readout{position:absolute;left:28px;bottom:20px;display:flex;gap:22px;pointer-events:none;font-size:12.5px;color:var(--muted)}
+#readout b{display:block;font:500 19px/1.2 Spectral,Georgia,serif;color:var(--text)}
+#readout .gold b{color:var(--gold)}#readout .teal b{color:var(--teal)}
+#toast{position:absolute;left:50%;top:22px;transform:translateX(-50%);background:#0e1719ee;border:1px solid var(--line);padding:8px 14px;border-radius:6px;font-size:13px;opacity:0;transition:opacity .25s;pointer-events:none;max-width:70%}
+#toast.on{opacity:1}
+aside{background:var(--panel);border-left:1px solid var(--line);overflow-y:auto;padding:18px 18px 40px}
+aside h2{font:500 16px/1.3 Spectral,Georgia,serif;margin:20px 0 8px;color:var(--text)}
+aside h2:first-child{margin-top:0}
+aside p{margin:6px 0;color:var(--muted);font-size:12.5px}
+.row{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+button,select,input[type=number]{font:inherit;font-size:13px;color:var(--text);background:#18252a;border:1px solid var(--line);border-radius:5px;padding:6px 10px;cursor:pointer}
+button:hover{border-color:#3d5459}
+button.on{background:#2a3a2f;border-color:var(--gold);color:#fff3d6}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--teal);outline-offset:1px}
+button:disabled{opacity:.45;cursor:default}
+input[type=number]{width:90px}
+label.chk{display:flex;gap:8px;align-items:center;font-size:13px;margin:4px 0;cursor:pointer}
+input[type=range]{width:100%;accent-color:var(--gold)}
+.slider{font-size:12.5px;color:var(--muted);margin:6px 0}
+#cmp{width:100%;height:150px;background:#0d1517;border:1px solid var(--line);border-radius:5px;display:block;margin-top:6px}
+#cmpText,#modeText{font-size:12.5px;color:var(--muted);white-space:pre-line;margin-top:6px}
+#modes{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:8px}
+#modes canvas{width:100%;aspect-ratio:1;border-radius:3px;border:1px solid var(--line);cursor:pointer;display:block}
+#modes canvas.on{border-color:var(--gold)}
+#modes div{font-size:10.5px;color:var(--muted);text-align:center}
+#begin{position:absolute;inset:0;display:grid;place-items:center;background:#0c1214cc;z-index:5}
+#begin div{max-width:430px;text-align:center;padding:24px}
+#begin p{font:300 17px/1.5 Spectral,Georgia,serif;color:var(--text)}
+#begin button{font-size:15px;padding:10px 22px;background:#2a3a2f;border-color:var(--gold);margin-top:10px}
+#fatal{position:absolute;inset:0;display:none;place-items:center;padding:30px;text-align:center;font:300 17px Spectral,Georgia,serif}
+.legend{display:flex;gap:12px;font-size:11.5px;color:var(--muted);margin-top:4px}
+.legend i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:4px}
+@media (max-width:820px){body{grid-template-columns:1fr;grid-template-rows:62vh auto;overflow:auto;height:auto}#stage{height:62vh}aside{border-left:0;border-top:1px solid var(--line)}.title h1{font-size:24px}.title p{display:none}#readout{gap:14px;bottom:10px;left:14px}}
+@media (prefers-reduced-motion:reduce){#toast{transition:none}}
+</style></head><body>
+<main id="stage">
+  <canvas id="gl"></canvas><canvas id="over" aria-label="The plate. Click to strike it; drag with the current tool."></canvas>
+  <div class="title"><h1>Resonating Matter</h1><p>A cracked plate that sound can mend. Sand gathers where it stops shaking; gold grows across the cracks it works hardest. What you hear is the same vibration.</p></div>
+  <div id="readout"><span class="gold"><b id="rGold">0%</b>cracks mended</span><span><b id="rSand">0%</b>sand on the move</span><span class="teal"><b id="rFar">–</b>far ear vs near ear</span><span><b id="rTime">0 s</b>of listening</span></div>
+  <div id="toast" role="status"></div>
+  <div id="begin"><div><p>Seven bronze tiles, barely touching. A speaker sits under the first one. Play it a song and watch what the song builds.</p><button id="go">Start sound</button><p style="font-size:13px;color:var(--muted)">Headphones help: the left ear sits beside the speaker, the right ear on the farthest tile.</p></div></div>
+  <div id="fatal"></div>
+</main>
+<aside>
+  <h2>What the plate hears</h2>
+  <div class="row"><button id="sDemoA">Low hymn</button><button id="sDemoB">Bright bells</button><button id="sFile">Your song…</button><button id="sMic">Microphone</button><button id="sStop" class="on">Silence</button></div>
+  <input id="file" type="file" accept="audio/*" hidden>
+  <div class="slider">Song in the room (dry)<input id="dry" type="range" min="0" max="1" step="0.01" value="0.3"></div>
+  <div class="slider">Plate volume<input id="vol" type="range" min="0" max="2" step="0.01" value="1"></div>
+
+  <h2>Your hand</h2>
+  <div class="row" id="tools"><button data-t="strike" class="on">Strike</button><button data-t="cut">Cut gold</button><button data-t="rake">Rake sand</button><button data-t="driver">Move speaker</button><button data-t="ears">Move ears</button></div>
+  <p id="toolHelp">Click anywhere on the plate to strike it.</p>
+
+  <h2>Matter</h2>
+  <label class="chk"><input type="checkbox" id="freeze"> Freeze matter (the plate still rings, nothing gets written)</label>
+  <p>Layer audit: switch a mechanism off and see what stops.</p>
+  <label class="chk"><input type="checkbox" id="pSandMoves" checked> Sand hops off shaking spots</label>
+  <label class="chk"><input type="checkbox" id="pSandMass" checked> Sand weighs on the plate</label>
+  <label class="chk"><input type="checkbox" id="pGoldGrows" checked> Gold grows where cracks are worked</label>
+  <label class="chk"><input type="checkbox" id="pGoldCouples" checked> Gold joins the tiles</label>
+
+  <h2>Compare two pasts</h2>
+  <p>Keep the plate as A, grow it on something else, keep that as B. Compare strikes each one, the original plate too, with the identical hit, all frozen.</p>
+  <div class="row"><button id="keepA">Keep as A</button><button id="keepB">Keep as B</button><button id="compare" disabled>Compare</button></div>
+  <div class="row"><button id="playA" disabled>Hear A</button><button id="playB" disabled>Hear B</button><button id="playS" disabled>Hear original</button></div>
+  <canvas id="cmp" aria-label="Spectra of the three strikes"></canvas>
+  <div class="legend"><span><i style="background:#8a9693"></i>original</span><span><i style="background:var(--gold)"></i>A</span><span><i style="background:var(--teal)"></i>B</span></div>
+  <div id="cmpText"></div>
+
+  <h2>The plate's notes</h2>
+  <p>Compile the plate as it is now into its ways of ringing, the way Moon bakes its light. Pale lines are where each mode stands still: where sand would gather. Click one to drive the speaker at that note.</p>
+  <div class="row"><button id="compile">Compile modes</button></div>
+  <div id="modeText"></div>
+  <div id="modes"></div>
+
+  <h2>Keep it</h2>
+  <div class="row"><button id="save">Save plate</button><button id="load">Load plate…</button><input id="loadFile" type="file" accept=".json,application/json" hidden></div>
+  <div class="row"><button id="restore">Restore original</button><input id="seed" type="number" min="1" max="999999" value="2718" aria-label="Seed"><button id="reseed">New plate</button></div>
+  <p>A saved plate is its sand and gold, not the song. Anyone can load it and play it.</p>
+  <p><a href="https://github.com/anttiluode/ResonatingMatter" style="color:var(--teal)">Source and honest ledger</a></p>
+</aside>
+
+<script id="rm-engine"></script>
+<script id="rm-modes"></script>
+<script id="rm-worklet" type="text/plain">
+class RMProc extends AudioWorkletProcessor {
+  constructor(o) {
+    super(); const p = o.processorOptions || {};
+    this.b = new RM.Body(p.seed || 2718); this.ratio = RM.PR / sampleRate; this.ph = 0;
+    this.prev = [0, 0]; this.cur = [0, 0]; this.inB = new Float32Array(1); this.outB = new Float32Array(2);
+    this.acc = 0; this.nacc = 0; this.gain = 7; this.since = 0; this.postEvery = Math.round(RM.PR / 30);
+    this.eL = 0; this.eR = 0; this.inE = 0; this.n = 0; this.heard = 0;
+    this.port.onmessage = e => this.cmd(e.data); this.post();
+  }
+  cmd(m) {
+    const b = this.b;
+    if (m.t === 'strike') b.strike(m.x, m.y, m.a);
+    else if (m.t === 'cut') b.cut(m.x, m.y, m.r);
+    else if (m.t === 'rake') b.rake(m.x, m.y, m.dx, m.dy, m.r);
+    else if (m.t === 'params') { Object.assign(b.P, m.p); b.refresh(); }
+    else if (m.t === 'gain') this.gain = m.g;
+    else if (m.t === 'driver') b.driver = m.p;
+    else if (m.t === 'pick') b.pick = m.p;
+    else if (m.t === 'get') this.port.postMessage({ t: 'matter', id: m.id, m: b.getMatter(), P: Object.assign({}, b.P) });
+    else if (m.t === 'set') { b.setMatter(m.m); b.silence(); this.heard = 0; }
+    else if (m.t === 'reseed') { const P = Object.assign({}, b.P); this.b = new RM.Body(m.seed); Object.assign(this.b.P, { sandMoves: P.sandMoves, sandMass: P.sandMass, goldGrows: P.goldGrows, goldCouples: P.goldCouples, frozen: P.frozen }); this.b.refresh(); this.heard = 0; }
+    this.post();
+  }
+  post() {
+    const b = this.b; let moving = 0; for (let i = 0; i < b.Dm.length; i++) if (b.Dm[i] > 0) moving++;
+    let g = 0, nc = 0; for (let c = 0; c < RM.NN; c++) { const x = b.bx[c], y = b.by[c]; if (x > 0 && x < 0.1) { g += b.gx[c]; nc++; } if (y > 0 && y < 0.1) { g += b.gy[c]; nc++; } }
+    this.port.postMessage({ t: 'state', sand: Float32Array.from(b.sand), gx: Float32Array.from(b.gx), gy: Float32Array.from(b.gy),
+      bx: Float32Array.from(b.bx), by: Float32Array.from(b.by), E: Float32Array.from(b.E), u: Float32Array.from(b.u),
+      meanE: b.meanE, moving: moving / b.Dm.length, gold: nc ? g / nc : 0, eL: this.eL, eR: this.eR, inE: this.inE,
+      heard: this.heard, driver: b.driver, pick: b.pick, frozen: b.P.frozen });
+  }
+  process(inputs, outputs) {
+    const inp = inputs[0] && inputs[0][0], o = outputs[0], L = o[0], R = o[1] || o[0], b = this.b;
+    for (let i = 0; i < L.length; i++) {
+      const x = inp ? inp[i] : 0; this.acc += x; this.nacc++;
+      this.ph += this.ratio;
+      while (this.ph >= 1) {
+        this.ph -= 1; this.inB[0] = this.acc / this.nacc; this.acc = 0; this.nacc = 0;
+        this.inE += 0.0005 * (this.inB[0] * this.inB[0] - this.inE);
+        if (this.inE > 1e-6) this.heard++;
+        b.run(1, this.inB, this.outB);
+        this.prev[0] = this.cur[0]; this.prev[1] = this.cur[1]; this.cur[0] = this.outB[0]; this.cur[1] = this.outB[1];
+        this.eL += 0.0004 * (this.cur[0] * this.cur[0] - this.eL); this.eR += 0.0004 * (this.cur[1] * this.cur[1] - this.eR);
+        this.since++;
+      }
+      const f = this.ph, g = this.gain;
+      const yl = (this.prev[0] + (this.cur[0] - this.prev[0]) * f) * g, yr = (this.prev[1] + (this.cur[1] - this.prev[1]) * f) * g;
+      L[i] = soft(yl); if (R !== L) R[i] = soft(yr);
+    }
+    if (this.since >= this.postEvery) { this.since = 0; this.post(); }
+    return true;
+  }
+}
+function soft(x) { if (x > 3) return 1; if (x < -3) return -1; return x * (27 + x * x) / (27 + 9 * x * x); }
+registerProcessor('rm', RMProc);
+</script>
+<script id="rm-lab" type="text/plain">
+// Lab worker: offline frozen strikes for Compare, and the modal compile.
+function fft(re, im) { const n = re.length;
+  for (let i = 1, j = 0; i < n; i++) { let bit = n >> 1; for (; j & bit; bit >>= 1) j ^= bit; j ^= bit; if (i < j) { let t = re[i]; re[i] = re[j]; re[j] = t; t = im[i]; im[i] = im[j]; im[j] = t; } }
+  for (let len = 2; len <= n; len <<= 1) { const a = -2 * Math.PI / len, wr = Math.cos(a), wi = Math.sin(a);
+    for (let i = 0; i < n; i += len) { let cr = 1, ci = 0; for (let j = 0; j < len / 2; j++) { const p = i + j, q = p + len / 2, tr = re[q] * cr - im[q] * ci, ti = re[q] * ci + im[q] * cr; re[q] = re[p] - tr; im[q] = im[p] - ti; re[p] += tr; im[p] += ti; const nr = cr * wr - ci * wi; ci = cr * wi + ci * wr; cr = nr; } } } }
+function bands(out, n) { const m = 32768, re = new Float64Array(m), im = new Float64Array(m);
+  for (let t = 0; t < Math.min(n, m); t++) re[t] = out[2 * t] + out[2 * t + 1];
+  fft(re, im); const B = 48, res = [];
+  for (let k = 0; k < B; k++) { const f0 = 80 * Math.pow(50, k / B), f1 = 80 * Math.pow(50, (k + 1) / B); let a = 0, c = 0;
+    for (let i = Math.floor(f0 / RM.PR * m); i <= Math.ceil(f1 / RM.PR * m); i++) { a += re[i] * re[i] + im[i] * im[i]; c++; }
+    res.push(10 * Math.log10(a / c + 1e-30)); }
+  return res; }
+onmessage = e => {
+  const m = e.data;
+  if (m.t === 'ir') {
+    const res = m.items.map(it => {
+      const b = new RM.Body(it.m.seed, { frozen: 1 }); b.setMatter(it.m);
+      const n = 36000, out = new Float32Array(2 * n); b.strike(m.x, m.y, 10); b.run(n, null, out);
+      let eL = 0, eR = 0; for (let t = 0; t < n; t++) { eL += out[2 * t] ** 2; eR += out[2 * t + 1] ** 2; }
+      return { out, bands: bands(out, n), eL, eR };
+    });
+    postMessage({ t: 'ir', res }, res.map(r => r.out.buffer));
+  } else if (m.t === 'compile') {
+    const b = new RM.Body(m.m.seed, { frozen: 1 }); Object.assign(b.P, m.P, { frozen: 1 }); b.setMatter(m.m);
+    const C = RMModes.compile(b, RM);
+    // fidelity: compiled voice (all modes) against the time-stepped body, same strike
+    const n = 24000, sim = new Float32Array(2 * n); const s = b.driver; b.strike(s[0], s[1], 10); b.run(n, null, sim);
+    const b2 = new RM.Body(m.m.seed, { frozen: 1 }); Object.assign(b2.P, m.P, { frozen: 1 }); b2.setMatter(m.m);
+    const voice = RMModes.strikeVoice(C, b2, RM, s[0], s[1], 10, n, C.n);
+    let e = 0, ee = 0; for (let i = 0; i < sim.length; i++) { e += (voice[i] - sim[i]) ** 2; ee += sim[i] ** 2; }
+    const K = 16, G = RM.G, modes = [];
+    for (let j = 0; j < K; j++) { const shape = new Float32Array(G * G); for (let i = 0; i < G * G; i++) shape[i] = C.V[i * C.n + j] * C.sm[i];
+      modes.push({ hz: RMModes.theta(C.lambda[j]) * RM.PR / (2 * Math.PI), t60: 6.91 / (C.damp[j] / 2) / RM.PR, shape }); }
+    postMessage({ t: 'modes', modes, err: Math.sqrt(e / ee), ms: C.ms, top: RMModes.theta(C.lambda[C.n - 1]) * RM.PR / (2 * Math.PI) });
+  }
+};
+</script>
+<script>
+'use strict';
+(() => {
+const $ = id => document.getElementById(id);
+const G = RM.G, N = RM.N, F = RM.F;
+const params = new URLSearchParams(location.search);
+let seed = +params.get('seed') || 2718; $('seed').value = seed;
+
+// ---------- view state (filled by the worklet, or by a local body before sound starts) ----------
+let local = new RM.Body(seed);
+let S = snapshot(local);
+function snapshot(b) { return { sand: b.sand, gx: b.gx, gy: b.gy, bx: b.bx, by: b.by, E: b.E, u: b.u, meanE: 0, moving: 0, gold: 0, eL: 0, eR: 0, inE: 0, heard: 0, driver: b.driver, pick: b.pick }; }
+
+// ---------- WebGL ----------
+const cv = $('gl'), gl = cv.getContext('webgl2', { antialias: false, premultipliedAlpha: false });
+if (!gl) { const f = $('fatal'); f.style.display = 'grid'; f.textContent = 'This page needs WebGL2, which this browser does not provide. The sound engine would still run, but there is nothing to see it with.'; $('begin').remove(); return; }
+const VS = `#version 300 es
+in vec2 p; void main(){ gl_Position = vec4(p,0.,1.); }`;
+const FS = `#version 300 es
+precision highp float;
+uniform sampler2D sandT, fieldT, linkT;
+uniform vec2 res; uniform vec3 plate; uniform float time, eScale, uScale, dpr;
+out vec4 O;
+float h21(vec2 p){ p = fract(p*vec2(123.34, 456.21)); p += dot(p, p+45.32); return fract(p.x*p.y); }
+float vnoise(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f);
+  return mix(mix(h21(i),h21(i+vec2(1,0)),f.x), mix(h21(i+vec2(0,1)),h21(i+vec2(1,1)),f.x), f.y); }
+float sandAt(vec2 X){ return texture(sandT, (X-0.5)/32.).r; }
+vec4 link(int i, int j){ return texelFetch(linkT, ivec2(clamp(i,0,33), clamp(j,0,33)), 0); }
+void main(){
+  vec2 px = vec2(gl_FragCoord.x, res.y - gl_FragCoord.y);
+  vec2 q = (px - plate.xy) / plate.z;
+  vec3 bg = mix(vec3(.047,.071,.078), vec3(.03,.045,.05), length(q-.5)*0.9);
+  vec2 X = q * 33.;
+  float aa = 33. / plate.z * 1.2;
+  // bezel
+  float outside = max(max(-X.x, X.x-33.), max(-X.y, X.y-33.));
+  if (outside > 0.9) { O = vec4(bg,1.); return; }
+  if (outside > 0.) { float sh = smoothstep(0.9, 0.0, outside); O = vec4(mix(bg, vec3(.02,.025,.027), sh*0.9), 1.); return; }
+  vec3 L = normalize(vec3(-0.55, -0.65, 0.75));
+  float rimd = min(min(X.x, 33.-X.x), min(X.y, 33.-X.y));
+  if (rimd < 0.5) {
+    float bev = rimd/0.5; vec3 rim = mix(vec3(.16,.13,.10), vec3(.33,.27,.19), bev*bev);
+    rim *= 0.8 + 0.25*vnoise(X*vec2(9.,0.6)+X.y*.3);
+    O = vec4(rim, 1.); return;
+  }
+  // matter
+  float h = sandAt(X);
+  float e = 0.18;
+  float hx = sandAt(X+vec2(e,0.)) - sandAt(X-vec2(e,0.)), hy = sandAt(X+vec2(0.,e)) - sandAt(X-vec2(0.,e));
+  vec4 fld = texture(fieldT, (X+0.5)/34.);
+  float vib = sqrt(max(fld.r, 0.)) * eScale;
+  vec2 dU = vec2(texture(fieldT,(X+vec2(.3,0.)+.5)/34.).g - texture(fieldT,(X-vec2(.3,0.)+.5)/34.).g,
+                 texture(fieldT,(X+vec2(0.,.3)+.5)/34.).g - texture(fieldT,(X-vec2(0.,.3)+.5)/34.).g) * uScale;
+  // bronze: brushed, with the live standing wave tilting its sheen
+  vec3 nM = normalize(vec3(-dU*1.8, 1.));
+  float brush = vnoise(vec2(X.x*1.2, X.y*14.)) * 0.5 + vnoise(X*3.1)*0.5;
+  vec3 metal = mix(vec3(.11,.085,.065), vec3(.20,.155,.11), brush);
+  vec3 H = normalize(L + vec3(0,0,1));
+  float spec = pow(max(dot(nM, H), 0.), 40.) * 0.55;
+  vec3 col = metal * (0.55 + 0.6*max(dot(nM, L), 0.)) + spec*vec3(1.,.82,.6);
+  col += vec3(.22,.62,.58) * pow(vib, 1.6) * 0.32;                       // where it is ringing now
+  // sand
+  vec3 nS = normalize(vec3(-hx*3.2, -hy*3.2, 1.));
+  float cover = smoothstep(0.32, 0.95, h);
+  col = mix(col, col*0.75 + vec3(.10,.085,.06), smoothstep(0.05, 0.32, h)); // a thin dusting dulls the bronze
+  float grain = h21(floor(px/ (1.4*dpr)) + floor(X*4.)*17.);
+  vec3 sandC = mix(vec3(.50,.43,.33), vec3(.93,.86,.71), smoothstep(0.15, 1.6, h));
+  sandC *= (0.82 + 0.28*grain) * (0.42 + 0.72*max(dot(nS, L), 0.));
+  sandC += vec3(.15,.4,.38) * pow(vib, 1.6) * 0.10;
+  col = mix(col, sandC, cover);
+  // seams: cracks between tiles, filled with gold where it has grown
+  vec2 W = X + 0.22*vec2(vnoise(X*1.7+3.)-.5, vnoise(X*1.7+11.)-.5);
+  int iv = int(round(W.x-0.5)), jv = int(round(W.y)); float dv = abs(W.x - (float(iv)+0.5));
+  int ih = int(round(W.x)), jh = int(round(W.y-0.5)); float dh = abs(W.y - (float(jh)+0.5));
+  vec4 lv = link(iv, jv), lh = link(ih, jh);
+  float crackV = lv.r * (1. - smoothstep(0.07, 0.07+aa, dv)), crackH = lh.b * (1. - smoothstep(0.07, 0.07+aa, dh));
+  float goldV = lv.r * lv.g, goldH = lh.b * lh.a;
+  float crack = max(crackV, crackH), gold = max(crackV*goldV, crackH*goldH);
+  float halo = max(lv.r*goldV*exp(-dv*dv*90.), lh.b*goldH*exp(-dh*dh*90.));
+  col = mix(col, vec3(.015,.012,.01), crack * (1. - gold) * 0.92);
+  vec3 goldC = mix(vec3(.55,.36,.10), vec3(1.,.83,.42), gold) * (0.85 + 0.3*pow(max(dot(normalize(vec3(0.,0.,1.)+vec3(dU,0.)),H),0.),8.));
+  col = mix(col, goldC, smoothstep(0.02, 0.35, gold) * crack);
+  col += vec3(.9,.65,.25) * halo * 0.25;
+  // ribs: gold on intact links, faint veins
+  int ia = int(floor(X.x)), ja = int(round(X.y)); float da = abs(X.y - float(ja));
+  int ib = int(round(X.x)), jb = int(floor(X.y)); float db = abs(X.x - float(ib));
+  vec4 la = link(ia, ja), lb = link(ib, jb);
+  float rib = max((1.-la.r)*la.g*(1.-smoothstep(0.03,0.03+aa,da)), (1.-lb.b)*lb.a*(1.-smoothstep(0.03,0.03+aa,db)));
+  col = mix(col, vec3(.95,.75,.35), smoothstep(0.08, 0.6, rib)*0.75);
+  // vignette, gamma-ish
+  col *= 1. - 0.18*pow(length(q-.5)*1.3, 2.);
+  O = vec4(pow(col, vec3(0.92)), 1.);
+}`;
+function sh(type, src) { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw Error(gl.getShaderInfoLog(s)); return s; }
+const prog = gl.createProgram(); gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(prog);
+if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw Error(gl.getProgramInfoLog(prog));
+gl.useProgram(prog);
+const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+const loc = gl.getAttribLocation(prog, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+const U = n => gl.getUniformLocation(prog, n);
+function mkTex(unit, w, h, fmt, ifmt, filter) { const t = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, t);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texStorage2D(gl.TEXTURE_2D, 1, ifmt, w, h); return { t, unit, w, h, fmt }; }
+const tSand = mkTex(0, F, F, gl.RED, gl.R16F, gl.LINEAR), tField = mkTex(1, N, N, gl.RG, gl.RG16F, gl.LINEAR), tLink = mkTex(2, N, N, gl.RGBA, gl.RGBA16F, gl.NEAREST);
+gl.uniform1i(U('sandT'), 0); gl.uniform1i(U('fieldT'), 1); gl.uniform1i(U('linkT'), 2);
+function up(T, data) { gl.activeTexture(gl.TEXTURE0 + T.unit); gl.bindTexture(gl.TEXTURE_2D, T.t); gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, T.w, T.h, T.fmt, gl.FLOAT, data); }
+const fieldBuf = new Float32Array(N * N * 2), linkBuf = new Float32Array(N * N * 4), Esm = new Float32Array(N * N);
+let eNorm = 1e-6, uNorm = 1e-3;
+function uploadState() {
+  up(tSand, S.sand);
+  let mx = 1e-12, ux = 1e-12;
+  for (let i = 0; i < N * N; i++) { Esm[i] += 0.35 * (S.E[i] - Esm[i]); if (Esm[i] > mx) mx = Esm[i]; const a = Math.abs(S.u[i]); if (a > ux) ux = a; }
+  eNorm += 0.05 * (mx - eNorm); uNorm += 0.05 * (ux - uNorm);
+  for (let i = 0; i < N * N; i++) { fieldBuf[2 * i] = Esm[i] / Math.max(eNorm, 1e-9); fieldBuf[2 * i + 1] = S.u[i] / Math.max(uNorm, 1e-6); }
+  up(tField, fieldBuf);
+  for (let i = 0; i < N * N; i++) { const bx = S.bx[i], by = S.by[i];
+    linkBuf[4 * i] = bx > 0 && bx < 0.1 ? 1 : 0; linkBuf[4 * i + 1] = S.gx[i]; linkBuf[4 * i + 2] = by > 0 && by < 0.1 ? 1 : 0; linkBuf[4 * i + 3] = S.gy[i]; }
+  up(tLink, linkBuf);
+}
+let dirty = true, plateRect = [0, 0, 1], dpr = 1;
+function layout() {
+  dpr = Math.min(2, window.devicePixelRatio || 1);
+  const r = cv.getBoundingClientRect(); cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
+  const ov = $('over'); ov.width = cv.width; ov.height = cv.height;
+  const narrow = r.width < 820;
+  const size = Math.min(r.width - (narrow ? 24 : 120), r.height - (narrow ? 130 : 150));
+  const x0 = narrow ? (r.width - size) / 2 : Math.max(380, (r.width - size) / 2 + 120);
+  const sz = Math.min(size, r.width - x0 - 30);
+  plateRect = [x0 * dpr, (narrow ? 60 : (r.height - sz) / 2 - 10) * dpr, sz * dpr];
+  if (!narrow && x0 + sz > r.width - 20) plateRect = [((r.width - size) / 2) * dpr, ((r.height - size) / 2) * dpr, size * dpr];
+  gl.viewport(0, 0, cv.width, cv.height);
+}
+addEventListener('resize', layout); layout();
+function draw(now) {
+  if (dirty) { uploadState(); dirty = false; }
+  gl.uniform2f(U('res'), cv.width, cv.height); gl.uniform3f(U('plate'), ...plateRect);
+  gl.uniform1f(U('time'), now / 1000); gl.uniform1f(U('eScale'), Math.min(1.2, Math.sqrt(eNorm) / 2e-3) * 0.9); gl.uniform1f(U('uScale'), 1.0); gl.uniform1f(U('dpr'), dpr);
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+  overlay(); readout();
+  requestAnimationFrame(draw);
+}
+
+// ---------- overlay: speaker, ears, cursor ----------
+const ov = $('over'), oc = ov.getContext('2d');
+let cursor = null, tool = 'strike';
+function toPx(X, Y) { return [plateRect[0] + X / 33 * plateRect[2], plateRect[1] + Y / 33 * plateRect[2]]; }
+function overlay() {
+  oc.clearRect(0, 0, ov.width, ov.height);
+  const cell = plateRect[2] / 33;
+  const [dx, dy] = toPx(S.driver[0], S.driver[1]);
+  oc.strokeStyle = '#7fd4c8'; oc.lineWidth = 1.5 * dpr;
+  oc.beginPath(); oc.arc(dx, dy, cell * 0.9, 0, 7); oc.stroke(); oc.beginPath(); oc.arc(dx, dy, cell * 0.35, 0, 7); oc.stroke();
+  oc.font = `${11 * dpr}px "Work Sans",sans-serif`; oc.fillStyle = '#bfe9e2';
+  oc.fillText('speaker', dx + cell * 1.1, dy + 4 * dpr);
+  ['left ear', 'right ear'].forEach((t, i) => { const [x, y] = toPx(S.pick[i][0], S.pick[i][1]);
+    oc.strokeStyle = '#f1e6c8'; oc.beginPath(); oc.moveTo(x - cell * .5, y); oc.lineTo(x + cell * .5, y); oc.moveTo(x, y - cell * .5); oc.lineTo(x, y + cell * .5); oc.stroke();
+    oc.fillStyle = '#f1e6c8'; oc.fillText(t, x + cell * 0.7, y - cell * 0.4); });
+  if (cursor && (tool === 'cut' || tool === 'rake')) { const [x, y] = toPx(cursor[0], cursor[1]); oc.strokeStyle = tool === 'cut' ? '#e2b553' : '#e6d8b8'; oc.setLineDash([4 * dpr, 4 * dpr]);
+    oc.beginPath(); oc.arc(x, y, cell * (tool === 'cut' ? 1.6 : 2.2), 0, 7); oc.stroke(); oc.setLineDash([]); }
+}
+let lastRead = 0;
+function readout() {
+  const t = performance.now(); if (t - lastRead < 200) return; lastRead = t;
+  $('rGold').textContent = Math.round(S.gold * 100) + '%';
+  $('rSand').textContent = Math.round(S.moving * 100) + '%';
+  $('rFar').textContent = S.eL > 1e-14 ? (10 * Math.log10((S.eR + 1e-20) / S.eL)).toFixed(0) + ' dB' : '–';
+  $('rTime').textContent = Math.round(S.heard / RM.PR) + ' s';
+}
+let toastT = 0;
+function toast(msg, ms = 3200) { const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), ms); }
+
+// ---------- audio ----------
+let ctx = null, node = null, dryG, bodyG, srcNode = null, micStream = null, osc = null;
+const engineSrc = $('rm-engine').textContent, modesSrc = $('rm-modes').textContent;
+function send(m) { if (node) node.port.postMessage(m); else localCmd(m); }
+function localCmd(m) { // before sound starts, edits act on the local preview body
+  const b = local;
+  if (m.t === 'strike') return; if (m.t === 'cut') b.cut(m.x, m.y, m.r); else if (m.t === 'rake') b.rake(m.x, m.y, m.dx, m.dy, m.r);
+  else if (m.t === 'driver') b.driver = m.p; else if (m.t === 'pick') b.pick = m.p; else if (m.t === 'params') { Object.assign(b.P, m.p); b.refresh(); }
+  else if (m.t === 'set') b.setMatter(m.m); else if (m.t === 'reseed') local = new RM.Body(m.seed);
+  S = snapshot(local); dirty = true;
+}
+const pending = new Map(); let reqId = 0;
+function getMatter() { if (!node) return Promise.resolve({ m: local.getMatter(), P: Object.assign({}, local.P) });
+  return new Promise(res => { const id = ++reqId; pending.set(id, res); node.port.postMessage({ t: 'get', id }); }); }
+async function start() {
+  ctx = new AudioContext({ latencyHint: 'interactive' });
+  const code = engineSrc + '\n' + $('rm-worklet').textContent;
+  const within = (p, ms) => Promise.race([p, new Promise((_, r) => setTimeout(() => r(Error('timed out')), ms))]);
+  try { await within(ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([code], { type: 'application/javascript' }))), 4000); }
+  catch (e1) { // some browsers refuse blob modules from file:// pages; a data URL often still works
+    try { await within(ctx.audioWorklet.addModule('data:application/javascript;charset=utf-8,' + encodeURIComponent(code)), 6000); }
+    catch (e2) { throw Error('the audio engine could not load here (' + e2.message + '). Open the page over http(s), for example from GitHub Pages or a local web server.'); } }
+  const m = local.getMatter();
+  node = new AudioWorkletNode(ctx, 'rm', { numberOfInputs: 1, numberOfOutputs: 1, outputChannelCount: [2], processorOptions: { seed } });
+  node.port.onmessage = e => { const d = e.data; if (d.t === 'state') { S = d; dirty = true; } else if (d.t === 'matter') { const r = pending.get(d.id); pending.delete(d.id); r && r(d); } };
+  node.port.postMessage({ t: 'set', m }); node.port.postMessage({ t: 'params', p: pick(local.P) });
+  bodyG = ctx.createGain(); bodyG.gain.value = +$('vol').value; node.connect(bodyG).connect(ctx.destination);
+  dryG = ctx.createGain(); dryG.gain.value = +$('dry').value; dryG.connect(ctx.destination);
+  $('begin').remove();
+  toast('Sound is on. Strike the plate, or play it a song.');
+}
+function pick(P) { return { sandMoves: P.sandMoves, sandMass: P.sandMass, goldGrows: P.goldGrows, goldCouples: P.goldCouples, frozen: P.frozen }; }
+$('go').onclick = () => { $('go').disabled = true; $('go').textContent = 'Starting…'; start().catch(err => { const f = $('fatal'); f.style.display = 'grid'; f.textContent = 'Sound could not start: ' + err.message; }); };
+$('vol').oninput = e => { if (bodyG) bodyG.gain.value = +e.target.value; };
+$('dry').oninput = e => { if (dryG) dryG.gain.value = +e.target.value; };
+function stopSource() {
+  if (srcNode) { try { srcNode.stop && srcNode.stop(); } catch (e) {} srcNode.disconnect(); srcNode = null; }
+  if (micStream) { micStream.getTracks().forEach(t => t.stop()); micStream = null; }
+  if (osc) { osc.stop(); osc.disconnect(); osc = null; document.querySelectorAll('#modes canvas').forEach(c => c.classList.remove('on')); }
+  ['sDemoA', 'sDemoB', 'sFile', 'sMic', 'sStop'].forEach(id => $(id).classList.remove('on'));
+}
+function playBuffer(buffer, id, name) {
+  stopSource(); const s = ctx.createBufferSource(); s.buffer = buffer; s.loop = id !== 'sFile';
+  s.connect(node); s.connect(dryG); s.start(); srcNode = s; $(id).classList.add('on');
+  s.onended = () => { if (srcNode === s) { stopSource(); $('sStop').classList.add('on'); toast('The song ended. The plate keeps what it did.'); } };
+  toast(name);
+}
+function demo(key, id, name) {
+  if (!node) return toast('Press Start sound first.');
+  const song = RM.makeSong(RM.SONGS[key], 32, ctx.sampleRate), b = ctx.createBuffer(1, song.length, ctx.sampleRate); b.copyToChannel(song, 0);
+  playBuffer(b, id, name);
+}
+$('sDemoA').onclick = () => demo('low', 'sDemoA', 'Low hymn: C major, low register, looping.');
+$('sDemoB').onclick = () => demo('high', 'sDemoB', 'Bright bells: the same tune two octaves up, looping.');
+$('sFile').onclick = () => { if (!node) return toast('Press Start sound first.'); $('file').click(); };
+$('file').onchange = async e => { const f = e.target.files[0]; if (!f) return; try { const b = await ctx.decodeAudioData(await f.arrayBuffer()); playBuffer(b, 'sFile', f.name + ' is playing into the plate.'); } catch (err) { toast('That file could not be decoded as audio.'); } e.target.value = ''; };
+$('sMic').onclick = async () => {
+  if (!node) return toast('Press Start sound first.');
+  try { stopSource(); micStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+    srcNode = ctx.createMediaStreamSource(micStream); srcNode.connect(node); $('sMic').classList.add('on'); toast('Listening to the microphone. Use headphones, or the plate will hear itself.'); }
+  catch (err) { toast('Microphone not available: ' + err.message); $('sStop').classList.add('on'); }
+};
+$('sStop').onclick = () => { stopSource(); $('sStop').classList.add('on'); };
+
+// ---------- tools ----------
+const help = { strike: 'Click anywhere on the plate to strike it. A strike is a real vibration: it can nudge sand too.', cut: 'Drag across a gold seam to cut it. Then strike near the speaker and listen to the right ear.',
+  rake: 'Drag to push sand. Its weight moves with it, so the notes move too.', driver: 'Drag the speaker to another spot. Songs enter the plate there.', ears: 'Drag either ear. What you hear is the plate\'s velocity at those two points.' };
+document.querySelectorAll('#tools button').forEach(b => b.onclick = () => { tool = b.dataset.t; document.querySelectorAll('#tools button').forEach(x => x.classList.toggle('on', x === b)); $('toolHelp').textContent = help[tool]; });
+function plateXY(e) { const r = ov.getBoundingClientRect(); const x = (e.clientX - r.left) * dpr, y = (e.clientY - r.top) * dpr;
+  return [(x - plateRect[0]) / plateRect[2] * 33, (y - plateRect[1]) / plateRect[2] * 33]; }
+const inside = p => p[0] > 0.5 && p[0] < 32.5 && p[1] > 0.5 && p[1] < 32.5;
+const clampNode = p => [Math.max(2, Math.min(G - 1, Math.round(p[0]))), Math.max(2, Math.min(G - 1, Math.round(p[1])))];
+let drag = null;
+ov.addEventListener('pointerdown', e => { const p = plateXY(e); if (!inside(p)) return; ov.setPointerCapture(e.pointerId);
+  if (tool === 'strike') { if (!node) return toast('Press Start sound first.'); send({ t: 'strike', x: p[0], y: p[1], a: 10 }); lastStrike = p; }
+  else if (tool === 'ears') { const d = S.pick.map(q => Math.hypot(q[0] - p[0], q[1] - p[1])); drag = { which: d[0] <= d[1] ? 0 : 1, last: p }; }
+  else drag = { last: p };
+  if (tool === 'cut') send({ t: 'cut', x: p[0], y: p[1], r: 1.6 });
+});
+ov.addEventListener('pointermove', e => { const p = plateXY(e); cursor = inside(p) ? p : null; if (!drag) return;
+  if (tool === 'cut') send({ t: 'cut', x: p[0], y: p[1], r: 1.6 });
+  else if (tool === 'rake') { const dx = p[0] - drag.last[0], dy = p[1] - drag.last[1]; if (Math.hypot(dx, dy) > 0.35) { send({ t: 'rake', x: p[0], y: p[1], dx, dy, r: 2.2 }); drag.last = p; } }
+  else if (tool === 'driver') { S.driver = clampNode(p); }
+  else if (tool === 'ears') { S.pick = S.pick.map((q, i) => i === drag.which ? clampNode(p) : q); }
+});
+ov.addEventListener('pointerup', () => { if (!drag) return; if (tool === 'driver') send({ t: 'driver', p: S.driver }); if (tool === 'ears') send({ t: 'pick', p: S.pick }); drag = null; });
+ov.addEventListener('pointerleave', () => { cursor = null; });
+let lastStrike = null;
+
+// ---------- matter switches ----------
+$('freeze').onchange = e => send({ t: 'params', p: { frozen: e.target.checked ? 1 : 0 } });
+[['pSandMoves', 'sandMoves'], ['pSandMass', 'sandMass'], ['pGoldGrows', 'goldGrows'], ['pGoldCouples', 'goldCouples']].forEach(([id, k]) =>
+  $(id).onchange = e => { send({ t: 'params', p: { [k]: e.target.checked ? 1 : 0 } }); });
+
+// ---------- lab worker: compare + compile ----------
+const lab = new Worker(URL.createObjectURL(new Blob([engineSrc, '\n', modesSrc, '\n', $('rm-lab').textContent], { type: 'application/javascript' })));
+let A = null, B = null, cmpRes = null;
+$('keepA').onclick = async () => { A = (await getMatter()).m; toast('Kept the plate as it is now as A.'); $('compare').disabled = !(A && B); };
+$('keepB').onclick = async () => { B = (await getMatter()).m; toast('Kept the plate as it is now as B.'); $('compare').disabled = !(A && B); };
+$('compare').onclick = async () => {
+  const cur = (await getMatter()).m; const orig = new RM.Body(A.seed).getMatter(); orig.driver = A.driver; orig.pick = A.pick;
+  const Bm = Object.assign({}, B, { driver: A.driver, pick: A.pick }); // same speaker, ears and strike for all three
+  const pt = lastStrike || A.driver;
+  $('cmpText').textContent = 'Striking three frozen plates…'; $('compare').disabled = true;
+  lab.postMessage({ t: 'ir', x: pt[0], y: pt[1], items: [{ m: orig }, { m: A }, { m: Bm }] });
+};
+let labBusy = false;
+lab.onmessage = e => { const d = e.data;
+  if (d.t === 'ir') { cmpRes = d.res; $('compare').disabled = false; ['playS', 'playA', 'playB'].forEach(id => $(id).disabled = !ctx); drawCompare(); }
+  else if (d.t === 'modes') { labBusy = false; $('compile').disabled = false; showModes(d); }
+};
+function dist(a, b) { let s = 0, n = 0; for (let k = 0; k < a.length; k++) { if (Math.max(a[k], b[k]) < -150) continue; s += (a[k] - b[k]) ** 2; n++; } return Math.sqrt(s / Math.max(1, n)); }
+function drawCompare() {
+  const c = $('cmp'), r = c.getBoundingClientRect(); c.width = r.width * dpr; c.height = r.height * dpr; const x = c.getContext('2d');
+  const all = cmpRes.flatMap(o => o.bands), mx = Math.max(...all), mn = mx - 70;
+  x.clearRect(0, 0, c.width, c.height);
+  const cols = ['#8a9693', '#e2b553', '#7fd4c8'];
+  x.fillStyle = '#93a6a1'; x.font = `${10 * dpr}px "Work Sans",sans-serif`;
+  [100, 300, 1000, 3000].forEach(f => { const px = Math.log(f / 80) / Math.log(50) * c.width; x.fillText(f >= 1000 ? f / 1000 + 'k' : f, px + 2, c.height - 4); x.fillRect(px, 0, 1, c.height - 14); });
+  cmpRes.forEach((o, i) => { x.strokeStyle = cols[i]; x.lineWidth = 1.6 * dpr; x.beginPath();
+    o.bands.forEach((v, k) => { const px = (k + 0.5) / o.bands.length * c.width, py = (1 - (Math.max(v, mn) - mn) / 70) * (c.height - 16) + 2; k ? x.lineTo(px, py) : x.moveTo(px, py); }); x.stroke(); });
+  const [s, a, b] = cmpRes, far = o => (10 * Math.log10((o.eR + 1e-30) / (o.eL + 1e-30))).toFixed(0);
+  $('cmpText').textContent = `Spectral distance (RMS over bands)\nA to B: ${dist(a.bands, b.bands).toFixed(1)} dB   A to original: ${dist(a.bands, s.bands).toFixed(1)} dB   B to original: ${dist(b.bands, s.bands).toFixed(1)} dB\nRight ear vs left ear: original ${far(s)} dB, A ${far(a)} dB, B ${far(b)} dB`;
+}
+function playIR(i) { if (!ctx || !cmpRes) return; const peak = Math.max(...cmpRes.map(o => o.out.reduce((m, v) => Math.max(m, Math.abs(v)), 0)));
+  const o = cmpRes[i].out, n = o.length / 2, b = ctx.createBuffer(2, n, RM.PR), l = new Float32Array(n), r = new Float32Array(n);
+  for (let t = 0; t < n; t++) { l[t] = o[2 * t] * 0.8 / peak; r[t] = o[2 * t + 1] * 0.8 / peak; }
+  b.copyToChannel(l, 0); b.copyToChannel(r, 1); const s = ctx.createBufferSource(); s.buffer = b; s.connect(ctx.destination); s.start(); }
+$('playS').onclick = () => playIR(0); $('playA').onclick = () => playIR(1); $('playB').onclick = () => playIR(2);
+
+$('compile').onclick = async () => { if (labBusy) return; labBusy = true; $('compile').disabled = true;
+  const g = await getMatter(); $('modeText').textContent = 'Compiling 1024 coupled points into their modes. This takes a few seconds…';
+  lab.postMessage({ t: 'compile', m: g.m, P: g.P }); };
+function showModes(d) {
+  $('modeText').textContent = `Compiled in ${(d.ms / 1000).toFixed(1)} s. The compiled voice (all 1024 modes, each a two-line recursion) matches the simulated strike to ${(d.err * 100).toFixed(1)}% RMS error; the rest is damping that is not mode-shaped. Lowest 16 modes below; the body's top mode is ${Math.round(d.top)} Hz.`;
+  const box = $('modes'); box.innerHTML = '';
+  d.modes.forEach(md => { const w = document.createElement('div'), c = document.createElement('canvas'); c.width = c.height = G * 2;
+    const x = c.getContext('2d'), im = x.createImageData(G * 2, G * 2); let mx = 1e-12; for (const v of md.shape) mx = Math.max(mx, Math.abs(v));
+    for (let j = 0; j < G * 2; j++) for (let i = 0; i < G * 2; i++) {
+      const fx = i / 2 - 0.25, fy = j / 2 - 0.25, i0 = Math.max(0, Math.min(G - 2, Math.floor(fx))), j0 = Math.max(0, Math.min(G - 2, Math.floor(fy))), tx = Math.min(1, Math.max(0, fx - i0)), ty = Math.min(1, Math.max(0, fy - j0));
+      const s = md.shape, v = (s[j0 * G + i0] * (1 - tx) + s[j0 * G + i0 + 1] * tx) * (1 - ty) + (s[(j0 + 1) * G + i0] * (1 - tx) + s[(j0 + 1) * G + i0 + 1] * tx) * ty;
+      const a = Math.abs(v) / mx, line = Math.exp(-(a * a) / 0.004), k = (j * G * 2 + i) * 4;
+      im.data[k] = 40 + 190 * line + 30 * a; im.data[k + 1] = 32 + 175 * line + 22 * a; im.data[k + 2] = 26 + 140 * line; im.data[k + 3] = 255; }
+    x.putImageData(im, 0, 0);
+    c.title = `${md.hz.toFixed(0)} Hz, rings ${md.t60.toFixed(1)} s. Click to drive the speaker at this note.`;
+    c.onclick = () => { if (!ctx) return toast('Press Start sound first.'); const was = c.classList.contains('on'); stopSource();
+      if (!was) { osc = ctx.createOscillator(); osc.frequency.value = md.hz; osc.connect(node); osc.start(); c.classList.add('on'); toast(`Driving the speaker at ${md.hz.toFixed(0)} Hz. Watch where the sand goes.`); } else $('sStop').classList.add('on'); };
+    const l = document.createElement('div'); l.textContent = `${md.hz.toFixed(0)} Hz`; w.append(c, l); box.append(w); });
+}
+
+// ---------- keep ----------
+const b64 = a => { const u = new Uint8Array(a.buffer, a.byteOffset, a.byteLength); let s = ''; for (let i = 0; i < u.length; i += 8192) s += String.fromCharCode.apply(null, u.subarray(i, i + 8192)); return btoa(s); };
+const unb64 = s => { const t = atob(s), u = new Uint8Array(t.length); for (let i = 0; i < t.length; i++) u[i] = t.charCodeAt(i); return new Float32Array(u.buffer); };
+$('save').onclick = async () => { const { m } = await getMatter();
+  const j = { format: 'ResonatingMatter plate', version: 1, seed: m.seed, sand: b64(m.sand), gx: b64(m.gx), gy: b64(m.gy), driver: m.driver, pick: m.pick, saved: new Date().toISOString() };
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(j)], { type: 'application/json' })); a.download = `plate-${m.seed}.json`; a.click(); toast('Saved the plate: its sand, gold, speaker and ears.'); };
+$('load').onclick = () => $('loadFile').click();
+$('loadFile').onchange = async e => { const f = e.target.files[0]; if (!f) return;
+  try { const j = JSON.parse(await f.text()); if (j.format !== 'ResonatingMatter plate') throw Error('not a plate file');
+    const m = { v: 1, seed: j.seed, sand: unb64(j.sand), gx: unb64(j.gx), gy: unb64(j.gy), driver: j.driver, pick: j.pick };
+    seed = j.seed; $('seed').value = seed; send({ t: 'set', m }); toast(`Loaded a plate grown from seed ${seed}.`); }
+  catch (err) { toast('That file is not a saved plate: ' + err.message); } e.target.value = ''; };
+$('restore').onclick = () => { send({ t: 'reseed', seed }); toast('Back to the original plate: fresh sand, open cracks.'); };
+$('reseed').onclick = () => { seed = Math.max(1, Math.round(+$('seed').value || 1)); send({ t: 'reseed', seed }); toast(`A new plate from seed ${seed}.`); };
+
+requestAnimationFrame(draw);
+window.__rm = { get S() { return S; }, get plate() { return plateRect.map(v => v / dpr); }, send, getMatter };
+})();
+</script>
+</body></html>

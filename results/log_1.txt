@@ -1,0 +1,9 @@
+seed 1 grew low (37s)
+seed 1 grew high (73s)
+seed 1 grew keyC (116s)
+seed 1 grew keyFs (152s)
+seed 1 grew straight (190s)
+seed 1 grew broken (226s)
+seed 1 grew up (263s)
+seed 1 grew down (300s)
+seed 1 done in 522s

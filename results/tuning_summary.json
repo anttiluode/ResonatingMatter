@@ -1,0 +1,418 @@
+{
+ "seeds": [
+  {
+   "seed": 1,
+   "grow_s": 90,
+   "diagonal": -0.0904,
+   "p_higher": 0.69785,
+   "p_lower": 0.3022,
+   "recognitionLoudest": "2/8",
+   "recognitionQuietest": "0/8",
+   "pairContrast": {
+    "register": 0.5524,
+    "key": -2.5848,
+    "rhythm": 0.2904,
+    "order": -0.062
+   },
+   "meanGrowthEffect_logRatio": -0.489,
+   "irDistance_dB": {
+    "register": {
+     "betweenPair": 6.58,
+     "aToOriginal": 10.61,
+     "bToOriginal": 9.1
+    },
+    "key": {
+     "betweenPair": 4.69,
+     "aToOriginal": 10.35,
+     "bToOriginal": 8.76
+    },
+    "rhythm": {
+     "betweenPair": 4.27,
+     "aToOriginal": 10.35,
+     "bToOriginal": 10.03
+    },
+    "order": {
+     "betweenPair": 3.13,
+     "aToOriginal": 10.62,
+     "bToOriginal": 10.45
+    }
+   },
+   "matter": {
+    "low": {
+     "goldOnCracks": 0.128,
+     "sandSD": 0.4
+    },
+    "high": {
+     "goldOnCracks": 0.303,
+     "sandSD": 0.452
+    },
+    "keyC": {
+     "goldOnCracks": 0.247,
+     "sandSD": 0.399
+    },
+    "keyFs": {
+     "goldOnCracks": 0.25,
+     "sandSD": 0.418
+    },
+    "straight": {
+     "goldOnCracks": 0.226,
+     "sandSD": 0.442
+    },
+    "broken": {
+     "goldOnCracks": 0.253,
+     "sandSD": 0.394
+    },
+    "up": {
+     "goldOnCracks": 0.253,
+     "sandSD": 0.396
+    },
+    "down": {
+     "goldOnCracks": 0.244,
+     "sandSD": 0.403
+    }
+   }
+  },
+  {
+   "seed": 2026,
+   "grow_s": 90,
+   "diagonal": -0.1278,
+   "p_higher": 0.84845,
+   "p_lower": 0.15155,
+   "recognitionLoudest": "1/8",
+   "recognitionQuietest": "1/8",
+   "pairContrast": {
+    "register": -1.3066,
+    "key": -0.8366,
+    "rhythm": 0.6347,
+    "order": -0.0156
+   },
+   "meanGrowthEffect_logRatio": -0.019,
+   "irDistance_dB": {
+    "register": {
+     "betweenPair": 7.12,
+     "aToOriginal": 11.71,
+     "bToOriginal": 11.5
+    },
+    "key": {
+     "betweenPair": 3.29,
+     "aToOriginal": 11.46,
+     "bToOriginal": 12.23
+    },
+    "rhythm": {
+     "betweenPair": 4.51,
+     "aToOriginal": 11.53,
+     "bToOriginal": 12.23
+    },
+    "order": {
+     "betweenPair": 4.6,
+     "aToOriginal": 11.08,
+     "bToOriginal": 10.42
+    }
+   },
+   "matter": {
+    "low": {
+     "goldOnCracks": 0.091,
+     "sandSD": 0.373
+    },
+    "high": {
+     "goldOnCracks": 0.324,
+     "sandSD": 0.41
+    },
+    "keyC": {
+     "goldOnCracks": 0.222,
+     "sandSD": 0.367
+    },
+    "keyFs": {
+     "goldOnCracks": 0.272,
+     "sandSD": 0.407
+    },
+    "straight": {
+     "goldOnCracks": 0.228,
+     "sandSD": 0.382
+    },
+    "broken": {
+     "goldOnCracks": 0.229,
+     "sandSD": 0.364
+    },
+    "up": {
+     "goldOnCracks": 0.217,
+     "sandSD": 0.378
+    },
+    "down": {
+     "goldOnCracks": 0.223,
+     "sandSD": 0.367
+    }
+   }
+  },
+  {
+   "seed": 2718,
+   "grow_s": 90,
+   "diagonal": -0.1876,
+   "p_higher": 0.9349,
+   "p_lower": 0.0651,
+   "recognitionLoudest": "1/8",
+   "recognitionQuietest": "1/8",
+   "pairContrast": {
+    "register": -0.1618,
+    "key": -0.6782,
+    "rhythm": 0.3089,
+    "order": 0.01
+   },
+   "meanGrowthEffect_logRatio": 0.02,
+   "irDistance_dB": {
+    "register": {
+     "betweenPair": 6.91,
+     "aToOriginal": 7.89,
+     "bToOriginal": 10.32
+    },
+    "key": {
+     "betweenPair": 5.89,
+     "aToOriginal": 10.34,
+     "bToOriginal": 10.76
+    },
+    "rhythm": {
+     "betweenPair": 2.78,
+     "aToOriginal": 10.36,
+     "bToOriginal": 10.16
+    },
+    "order": {
+     "betweenPair": 2.7,
+     "aToOriginal": 9.91,
+     "bToOriginal": 10.64
+    }
+   },
+   "matter": {
+    "low": {
+     "goldOnCracks": 0.073,
+     "sandSD": 0.42
+    },
+    "high": {
+     "goldOnCracks": 0.301,
+     "sandSD": 0.416
+    },
+    "keyC": {
+     "goldOnCracks": 0.194,
+     "sandSD": 0.368
+    },
+    "keyFs": {
+     "goldOnCracks": 0.231,
+     "sandSD": 0.425
+    },
+    "straight": {
+     "goldOnCracks": 0.195,
+     "sandSD": 0.373
+    },
+    "broken": {
+     "goldOnCracks": 0.204,
+     "sandSD": 0.355
+    },
+    "up": {
+     "goldOnCracks": 0.19,
+     "sandSD": 0.387
+    },
+    "down": {
+     "goldOnCracks": 0.188,
+     "sandSD": 0.403
+    }
+   }
+  },
+  {
+   "seed": 42,
+   "grow_s": 90,
+   "diagonal": -0.3301,
+   "p_higher": 0.8859,
+   "p_lower": 0.1141,
+   "recognitionLoudest": "2/8",
+   "recognitionQuietest": "2/8",
+   "pairContrast": {
+    "register": 1.2706,
+    "key": -4.5039,
+    "rhythm": 0.0231,
+    "order": 0.014
+   },
+   "meanGrowthEffect_logRatio": -0.922,
+   "irDistance_dB": {
+    "register": {
+     "betweenPair": 8.02,
+     "aToOriginal": 11.53,
+     "bToOriginal": 13.81
+    },
+    "key": {
+     "betweenPair": 5.22,
+     "aToOriginal": 13.31,
+     "bToOriginal": 13.04
+    },
+    "rhythm": {
+     "betweenPair": 4.27,
+     "aToOriginal": 14.44,
+     "bToOriginal": 13.62
+    },
+    "order": {
+     "betweenPair": 3.15,
+     "aToOriginal": 13.13,
+     "bToOriginal": 13.44
+    }
+   },
+   "matter": {
+    "low": {
+     "goldOnCracks": 0.11,
+     "sandSD": 0.411
+    },
+    "high": {
+     "goldOnCracks": 0.317,
+     "sandSD": 0.404
+    },
+    "keyC": {
+     "goldOnCracks": 0.199,
+     "sandSD": 0.426
+    },
+    "keyFs": {
+     "goldOnCracks": 0.253,
+     "sandSD": 0.413
+    },
+    "straight": {
+     "goldOnCracks": 0.193,
+     "sandSD": 0.443
+    },
+    "broken": {
+     "goldOnCracks": 0.214,
+     "sandSD": 0.397
+    },
+    "up": {
+     "goldOnCracks": 0.209,
+     "sandSD": 0.425
+    },
+    "down": {
+     "goldOnCracks": 0.2,
+     "sandSD": 0.424
+    }
+   }
+  },
+  {
+   "seed": 7,
+   "grow_s": 90,
+   "diagonal": -0.3116,
+   "p_higher": 0.9995,
+   "p_lower": 0.0005,
+   "recognitionLoudest": "0/8",
+   "recognitionQuietest": "4/8",
+   "pairContrast": {
+    "register": -1.6249,
+    "key": -1.1797,
+    "rhythm": 0.0168,
+    "order": -0.0283
+   },
+   "meanGrowthEffect_logRatio": -0.355,
+   "irDistance_dB": {
+    "register": {
+     "betweenPair": 7.99,
+     "aToOriginal": 11.55,
+     "bToOriginal": 11.9
+    },
+    "key": {
+     "betweenPair": 4.32,
+     "aToOriginal": 13.75,
+     "bToOriginal": 13.55
+    },
+    "rhythm": {
+     "betweenPair": 4.28,
+     "aToOriginal": 12.91,
+     "bToOriginal": 13
+    },
+    "order": {
+     "betweenPair": 3.75,
+     "aToOriginal": 13.45,
+     "bToOriginal": 12.97
+    }
+   },
+   "matter": {
+    "low": {
+     "goldOnCracks": 0.125,
+     "sandSD": 0.447
+    },
+    "high": {
+     "goldOnCracks": 0.313,
+     "sandSD": 0.404
+    },
+    "keyC": {
+     "goldOnCracks": 0.207,
+     "sandSD": 0.424
+    },
+    "keyFs": {
+     "goldOnCracks": 0.246,
+     "sandSD": 0.42
+    },
+    "straight": {
+     "goldOnCracks": 0.193,
+     "sandSD": 0.431
+    },
+    "broken": {
+     "goldOnCracks": 0.218,
+     "sandSD": 0.423
+    },
+    "up": {
+     "goldOnCracks": 0.203,
+     "sandSD": 0.45
+    },
+    "down": {
+     "goldOnCracks": 0.215,
+     "sandSD": 0.443
+    }
+   }
+  }
+ ],
+ "pooled": {
+  "meanDiagonal": -0.2095,
+  "seedsWithPositiveDiagonal": "0/5",
+  "pairs": {
+   "register": {
+    "mean": -0.2541,
+    "positive": "2/5",
+    "values": [
+     0.5524,
+     -1.3066,
+     -0.1618,
+     1.2706,
+     -1.6249
+    ]
+   },
+   "key": {
+    "mean": -1.9566,
+    "positive": "0/5",
+    "values": [
+     -2.5848,
+     -0.8366,
+     -0.6782,
+     -4.5039,
+     -1.1797
+    ]
+   },
+   "rhythm": {
+    "mean": 0.2548,
+    "positive": "5/5",
+    "values": [
+     0.2904,
+     0.6347,
+     0.3089,
+     0.0231,
+     0.0168
+    ]
+   },
+   "order": {
+    "mean": -0.0164,
+    "positive": "2/5",
+    "values": [
+     -0.062,
+     -0.0156,
+     0.01,
+     0.014,
+     -0.0283
+    ]
+   }
+  },
+  "allPairContrasts": {
+   "positive": "9/20",
+   "mean": -0.4931
+  }
+ }
+}
