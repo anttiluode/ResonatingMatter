@@ -7,6 +7,7 @@
 <style>
 :root{--ink:#0c1214;--panel:#121b1d;--line:#26353a;--bronze:#2b2420;--sand:#e6d8b8;--gold:#e2b553;--teal:#7fd4c8;--text:#dfe6e2;--muted:#93a6a1;color-scheme:dark}
 *{box-sizing:border-box}
+#stage,button,label{user-select:none;-webkit-user-select:none}
 html,body{margin:0;height:100%;background:var(--ink);color:var(--text);font:14px/1.45 "Work Sans",system-ui,sans-serif}
 body{display:grid;grid-template-columns:1fr 330px;height:100vh;overflow:hidden}
 #stage{position:relative;overflow:hidden}
@@ -391,7 +392,7 @@ async function start() {
     catch (e2) { throw Error('the audio engine could not load here (' + e2.message + '). Open the page over http(s), for example from GitHub Pages or a local web server.'); } }
   const m = local.getMatter();
   node = new AudioWorkletNode(ctx, 'rm', { numberOfInputs: 1, numberOfOutputs: 1, outputChannelCount: [2], processorOptions: { seed } });
-  node.port.onmessage = e => { const d = e.data; if (d.t === 'state') { S = d; dirty = true; } else if (d.t === 'matter') { const r = pending.get(d.id); pending.delete(d.id); r && r(d); } };
+  node.port.onmessage = e => { const d = e.data; if (d.t === 'state') { if (drag && drag.driver) d.driver = drag.driver; if (drag && drag.pick) d.pick = drag.pick; S = d; dirty = true; } else if (d.t === 'matter') { const r = pending.get(d.id); pending.delete(d.id); r && r(d); } };
   node.port.postMessage({ t: 'set', m }); node.port.postMessage({ t: 'params', p: pick(local.P) });
   bodyG = ctx.createGain(); bodyG.gain.value = +$('vol').value; node.connect(bodyG).connect(ctx.destination);
   dryG = ctx.createGain(); dryG.gain.value = +$('dry').value; dryG.connect(ctx.destination);
@@ -449,9 +450,12 @@ ov.addEventListener('pointerdown', e => { const p = plateXY(e); if (!inside(p)) 
 ov.addEventListener('pointermove', e => { const p = plateXY(e); cursor = inside(p) ? p : null; if (!drag) return;
   if (tool === 'cut') send({ t: 'cut', x: p[0], y: p[1], r: 1.6 });
   else if (tool === 'rake') { const dx = p[0] - drag.last[0], dy = p[1] - drag.last[1]; if (Math.hypot(dx, dy) > 0.35) { send({ t: 'rake', x: p[0], y: p[1], dx, dy, r: 2.2 }); drag.last = p; } }
-  else if (tool === 'driver') { S.driver = clampNode(p); }
-  else if (tool === 'ears') { S.pick = S.pick.map((q, i) => i === drag.which ? clampNode(p) : q); }
+  else if (tool === 'driver') { drag.driver = S.driver = clampNode(p); liveSend({ t: 'driver', p: drag.driver }); }
+  else if (tool === 'ears') { drag.pick = S.pick = S.pick.map((q, i) => i === drag.which ? clampNode(p) : q); liveSend({ t: 'pick', p: drag.pick }); }
 });
+// while dragging, the sound follows the hand (at most every 40 ms), and incoming engine state can't pull the marker back
+let lastLive = 0;
+function liveSend(m) { const t = performance.now(); if (t - lastLive > 40) { lastLive = t; send(m); } }
 ov.addEventListener('pointerup', () => { if (!drag) return; if (tool === 'driver') send({ t: 'driver', p: S.driver }); if (tool === 'ears') send({ t: 'pick', p: S.pick }); drag = null; });
 ov.addEventListener('pointerleave', () => { cursor = null; });
 let lastStrike = null;

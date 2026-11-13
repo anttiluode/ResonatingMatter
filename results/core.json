@@ -1,5 +1,5 @@
 {
- "date": "2026-11-13T17:22:48.652Z",
+ "date": "2026-11-13T17:37:21.557Z",
  "engine": "index.html",
  "checks": [
   {
@@ -78,7 +78,7 @@
    "name": "Compiled modes reproduce the simulated strike (all 1024 modes)",
    "pass": true,
    "relErr": 0.0282,
-   "compileMs": 13417
+   "compileMs": 11670
   },
   {
    "name": "Cutting the gold around the speaker's tile silences the far ear more than an equal cut elsewhere",
